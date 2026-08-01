@@ -63,7 +63,7 @@ document.getElementById('dismissHint').addEventListener('click', () => {
 setupPinchZoom();
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js?v=16').catch(() => {});
+  navigator.serviceWorker.register('./sw.js?v=17').catch(() => {});
 }
 
 if (!localStorage.getItem(HINT_KEY) && !window.navigator.standalone) {

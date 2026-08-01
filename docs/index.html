@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" sizes="167x167" href="icon-alena-167.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icon-alena-180.png">
   <link rel="icon" href="icon-alena-192.png" type="image/png">
-  <link rel="stylesheet" href="style.css?v=15">
+  <link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
   <div id="app" data-mode="day">
@@ -26,9 +26,11 @@
     <header class="top-bar">
       <button id="prevBtn" class="icon-btn" aria-label="Назад">‹</button>
       <div id="topSubtitle" class="top-subtitle"></div>
-      <button id="monthBtn" class="month-btn" aria-label="Выбрать дату">📅</button>
-      <button id="settingsBtn" class="icon-btn settings-btn" aria-label="Настройки цен">⚙</button>
-      <button id="nextBtn" class="icon-btn" aria-label="Вперёд">›</button>
+      <div class="top-actions">
+        <button id="monthBtn" class="month-btn" aria-label="Выбрать дату">📅</button>
+        <button id="settingsBtn" class="icon-btn settings-btn" aria-label="Настройки цен">⚙</button>
+        <button id="nextBtn" class="icon-btn" aria-label="Вперёд">›</button>
+      </div>
     </header>
 
     <div id="dayView" class="day-view">
@@ -83,6 +85,6 @@
     <button id="dismissHint" class="secondary-btn">Понятно</button>
   </div>
 
-  <script src="app.js?v=15"></script>
+  <script src="app.js?v=16"></script>
 </body>
 </html>

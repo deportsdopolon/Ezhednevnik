@@ -62,10 +62,17 @@ body {
 
 .top-bar {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto 36px 38px;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
   gap: 6px;
   align-items: center;
   margin-bottom: 6px;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .stats-bar {
@@ -340,18 +347,28 @@ body {
 .month-picker {
   border: none;
   border-radius: 18px 18px 0 0;
-  width: min(100%, 400px);
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: calc(100% - 20px);
+  max-width: 400px;
   padding: 0;
-  margin: auto auto 0;
+  margin: 0;
 }
 
 .settings-dialog {
   border: none;
   border-radius: 18px 18px 0 0;
-  width: min(100%, 430px);
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: calc(100% - 20px);
+  max-width: 430px;
   max-height: 88dvh;
   padding: 0;
-  margin: auto auto 0;
+  margin: 0;
 }
 .settings-dialog::backdrop { background: rgba(0,0,0,.4); }
 .settings-inner { padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); overflow-y: auto; }
@@ -369,7 +386,8 @@ body {
   .app-banner { width: calc(100% + 10px); margin-left: -5px; margin-right: -5px; }
   .hour-row { grid-template-columns: 44px minmax(0, 1fr) 42px 68px; gap: 3px; }
   .service-col, .service-select { width: 68px; }
-  .top-bar { grid-template-columns: 34px minmax(0,1fr) auto 32px 34px; gap: 3px; }
+  .top-bar { grid-template-columns: 34px minmax(0,1fr) auto; gap: 3px; }
+  .top-actions { gap: 3px; }
   .icon-btn { width: 32px; height: 32px; }
   .month-btn { padding: 6px 7px; }
 }

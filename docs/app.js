@@ -13,6 +13,7 @@ const SERVICES = [
 ];
 const PICKABLE_SERVICES = SERVICES.filter((s) => s.id && s.id !== 'dual');
 const STORAGE_KEY = 'ezhnedevnik.entries.v5';
+const PRICES_KEY = 'ezhnedevnik.prices.v1';
 const HINT_KEY = 'ezhnedevnik.hint.dismissed';
 
 const WEEKDAYS_RU = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
@@ -21,6 +22,7 @@ const MONTHS_RU = ['январь', 'февраль', 'март', 'апрель',
 
 const today = startOfDay(new Date());
 let entries = loadEntries();
+let servicePrices = loadServicePrices();
 let selectedDate = new Date(today);
 let overviewStart = startOfWeek(selectedDate);
 let viewMode = 'day';
@@ -39,6 +41,9 @@ const monthPicker = document.getElementById('monthPicker');
 const pickerDays = document.getElementById('pickerDays');
 const pickerMonthTitle = document.getElementById('pickerMonthTitle');
 const toast = document.getElementById('toast');
+const statsBar = document.getElementById('statsBar');
+const settingsDialog = document.getElementById('settingsDialog');
+const priceSettings = document.getElementById('priceSettings');
 
 document.getElementById('prevBtn').addEventListener('click', () => navigate(-1));
 document.getElementById('nextBtn').addEventListener('click', () => navigate(1));
@@ -47,6 +52,9 @@ document.getElementById('pickerPrevMonth').addEventListener('click', () => { pic
 document.getElementById('pickerNextMonth').addEventListener('click', () => { pickerMonth = addMonths(pickerMonth, 1); renderMonthPicker(); });
 document.getElementById('pickerToday').addEventListener('click', () => selectPickerDate(today));
 document.getElementById('pickerClose').addEventListener('click', () => monthPicker.close());
+document.getElementById('settingsBtn').addEventListener('click', openSettings);
+document.getElementById('exportBtn').addEventListener('click', exportBackup);
+document.getElementById('importInput').addEventListener('change', importBackup);
 document.getElementById('dismissHint').addEventListener('click', () => {
   localStorage.setItem(HINT_KEY, '1');
   document.getElementById('installHint').classList.add('hidden');
@@ -66,14 +74,41 @@ render();
 
 function render() {
   appBanner.innerHTML = bannerHTML();
+  renderStats();
   document.getElementById('monthBtn').textContent = capitalize(MONTHS_RU[selectedDate.getMonth()]).slice(0, 3);
   if (viewMode === 'day') renderDayView();
   else renderOverviewView();
 }
 
 function bannerHTML() {
-  return `<div class="banner-bg"><img src="logo-banner.png?v=12" alt="АлёнаNails" class="banner-img"></div>`;
+  return `<div class="banner-bg"><img src="lemon-print.jpg?v=15" alt="Лимонный принт" class="banner-img"></div>`;
 }
+
+function renderStats() {
+  const weekStart = startOfWeek(selectedDate);
+  const weekEnd = addDays(weekStart, 7);
+  const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  const monthEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1);
+  const week = totalsBetween(weekStart, weekEnd);
+  const month = totalsBetween(monthStart, monthEnd);
+  statsBar.innerHTML = `
+    <div class="stat-card"><span>За неделю</span><strong>${week.people} чел.</strong> · <b>${formatMoney(week.money)}</b></div>
+    <div class="stat-card"><span>За месяц</span><strong>${month.people} чел.</strong> · <b>${formatMoney(month.money)}</b></div>`;
+}
+
+function totalsBetween(from, to) {
+  let people = 0;
+  let money = 0;
+  Object.entries(entries).forEach(([key, entry]) => {
+    const date = new Date(`${key.slice(0, 10)}T00:00:00`);
+    if (date < from || date >= to) return;
+    if (entry.contactName || entry.contactPhone || entry.serviceId || entry.price) people += 1;
+    money += Number(entry.price) || 0;
+  });
+  return { people, money };
+}
+
+function formatMoney(value) { return `${new Intl.NumberFormat('ru-RU').format(value)} ₽`; }
 
 function renderDayView() {
   app.dataset.mode = 'day';
@@ -93,7 +128,7 @@ function createHourRow(date, hour) {
   const key = entryKey(date, hour);
   const entry = getEntry(key);
   const row = document.createElement('div');
-  row.className = 'hour-row';
+  row.className = `hour-row${entry.color ? ` color-${entry.color}` : ''}`;
 
   const timeCol = document.createElement('div');
   timeCol.className = 'time-col';
@@ -202,9 +237,10 @@ function createHourRow(date, hour) {
     if (!val) {
       patch.price = '';
       priceInput.value = '';
-    } else if (svc?.price) {
-      patch.price = svc.price;
-      priceInput.value = String(svc.price);
+    } else if (svc) {
+      const configuredPrice = servicePrice(svc.id);
+      patch.price = configuredPrice || '';
+      priceInput.value = configuredPrice ? String(configuredPrice) : '';
     }
     updateEntry(key, patch);
     syncDualUI();
@@ -231,6 +267,33 @@ function createHourRow(date, hour) {
   row.appendChild(clientCol);
   row.appendChild(priceInput);
   row.appendChild(serviceCol);
+
+  const colors = document.createElement('div');
+  colors.className = 'color-picker';
+  ['', 'yellow', 'purple', 'green'].forEach((color) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `color-dot ${color || 'none'}`;
+    btn.setAttribute('aria-label', color ? `Цвет: ${color}` : 'Без цвета');
+    btn.addEventListener('click', () => {
+      updateEntry(key, { color });
+      row.className = `hour-row${color ? ` color-${color}` : ''}`;
+    });
+    colors.appendChild(btn);
+  });
+
+  const note = document.createElement('textarea');
+  note.className = 'row-note';
+  note.placeholder = 'Заметка';
+  note.value = entry.note || '';
+  note.addEventListener('input', () => {
+    const value = note.value;
+    const autoDone = /(^|\s)(сделал[аи]?|готово)(\s|$)/i.test(value);
+    updateEntry(key, { note: value, ...(autoDone && !getEntry(key).color ? { color: 'green' } : {}) });
+    if (autoDone && !row.classList.contains('color-green') && !entry.color) row.classList.add('color-green');
+  });
+  row.appendChild(colors);
+  row.appendChild(note);
   return row;
 }
 
@@ -454,13 +517,13 @@ function formatServiceLabel(entry) {
 }
 
 function servicePrice(serviceId) {
-  return SERVICES.find((s) => s.id === serviceId)?.price || 0;
+  return Number(servicePrices[serviceId] ?? SERVICES.find((s) => s.id === serviceId)?.price) || 0;
 }
 
 function getEntry(key) {
   return entries[key] || {
     minutes: '', contactName: '', contactPhone: '',
-    serviceId: '', serviceId1: '', serviceId2: '', price: ''
+    serviceId: '', serviceId1: '', serviceId2: '', price: '', note: '', color: ''
   };
 }
 
@@ -468,10 +531,65 @@ function updateEntry(key, patch) {
   const next = { ...getEntry(key), ...patch };
   const empty = !next.contactName && !next.contactPhone && !next.serviceId &&
     !next.serviceId1 && !next.serviceId2 &&
-    !next.price && (next.minutes === '' || next.minutes == null);
+    !next.price && !next.note && !next.color && (next.minutes === '' || next.minutes == null);
   if (empty) delete entries[key];
   else entries[key] = next;
   persistEntries();
+  renderStats();
+}
+
+function loadServicePrices() {
+  try { return JSON.parse(localStorage.getItem(PRICES_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function openSettings() {
+  priceSettings.innerHTML = '';
+  PICKABLE_SERVICES.forEach((svc) => {
+    const row = document.createElement('label');
+    row.className = 'price-setting';
+    const name = document.createElement('span');
+    name.textContent = svc.label;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.inputMode = 'numeric';
+    input.value = String(servicePrice(svc.id));
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/\D/g, '');
+      servicePrices[svc.id] = Number(input.value) || 0;
+      localStorage.setItem(PRICES_KEY, JSON.stringify(servicePrices));
+    });
+    row.append(name, input);
+    priceSettings.appendChild(row);
+  });
+  settingsDialog.showModal();
+}
+
+function exportBackup() {
+  const payload = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), entries, servicePrices }, null, 2);
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
+  link.download = `alena-nails-${dateKey(new Date())}.json`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+  showToast('Резервная копия сохранена');
+}
+
+async function importBackup(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data.entries || typeof data.entries !== 'object') throw new Error('bad backup');
+    entries = data.entries;
+    servicePrices = data.servicePrices || servicePrices;
+    persistEntries();
+    localStorage.setItem(PRICES_KEY, JSON.stringify(servicePrices));
+    settingsDialog.close();
+    render();
+    showToast('Данные восстановлены');
+  } catch { showToast('Не удалось прочитать копию'); }
+  event.target.value = '';
 }
 
 function navigate(delta) {

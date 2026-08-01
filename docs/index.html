@@ -15,16 +15,19 @@
   <link rel="apple-touch-icon" sizes="167x167" href="icon-alena-167.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icon-alena-180.png">
   <link rel="icon" href="icon-alena-192.png" type="image/png">
-  <link rel="stylesheet" href="style.css?v=12">
+  <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
   <div id="app" data-mode="day">
     <div id="appBanner" class="app-banner"></div>
 
+    <section id="statsBar" class="stats-bar" aria-label="Статистика"></section>
+
     <header class="top-bar">
       <button id="prevBtn" class="icon-btn" aria-label="Назад">‹</button>
       <div id="topSubtitle" class="top-subtitle"></div>
       <button id="monthBtn" class="month-btn" aria-label="Выбрать дату">📅</button>
+      <button id="settingsBtn" class="icon-btn settings-btn" aria-label="Настройки цен">⚙</button>
       <button id="nextBtn" class="icon-btn" aria-label="Вперёд">›</button>
     </header>
 
@@ -55,6 +58,24 @@
     </div>
   </dialog>
 
+  <dialog id="settingsDialog" class="settings-dialog">
+    <form method="dialog" class="settings-inner">
+      <div class="settings-head">
+        <div>
+          <h3>Настройки</h3>
+          <p>Цены работ</p>
+        </div>
+        <button type="submit" class="icon-btn small" aria-label="Закрыть">×</button>
+      </div>
+      <div id="priceSettings" class="price-settings"></div>
+      <div class="backup-actions">
+        <button type="button" id="exportBtn" class="secondary-btn">Сохранить копию</button>
+        <label class="secondary-btn import-label">Восстановить<input id="importInput" type="file" accept="application/json"></label>
+      </div>
+      <button type="submit" class="primary-btn full-width">Готово</button>
+    </form>
+  </dialog>
+
   <div id="toast" class="toast hidden"></div>
 
   <div id="installHint" class="install-hint hidden">
@@ -62,6 +83,6 @@
     <button id="dismissHint" class="secondary-btn">Понятно</button>
   </div>
 
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>

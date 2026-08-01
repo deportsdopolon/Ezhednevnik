@@ -1,4 +1,4 @@
-const CACHE = 'alenanails-v14';
+const CACHE = 'alenanails-v15';
 const ASSETS = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const ASSETS = [
   './app.js',
   './manifest.json',
   './logo-banner.png',
+  './lemon-print.jpg',
   './icon-alena-152.png',
   './icon-alena-167.png',
   './icon-alena-180.png',
@@ -22,6 +23,7 @@ const NETWORK_FIRST = [
   'index.html',
   'manifest.json',
   'logo-banner.png',
+  'lemon-print.jpg',
   'icon-alena-152.png',
   'icon-alena-167.png',
   'icon-alena-180.png',

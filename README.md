@@ -1,4 +1,5 @@
-# Ежедневник — личный планировщик для iPhone
+# Ezhednevnik
+
 
 Веб-приложение (PWA): открываете в Safari и добавляете на экран «Домой» — работает как обычное приложение, без Mac и App Store.
 
@@ -33,3 +34,7 @@
 - `docs/` — веб-приложение (GitHub Pages)
 - `Ezhnedevnik/` — нативная iOS-версия (нужен Mac, опционально)
 
+
+## Размещение проекта
+
+Основная папка на ПК: `C:\Projects\Ezhednevnik`. Репозиторий: https://github.com/deportsdopolon/Ezhednevnik. Основная ветка — `main`. Старые пути на ПК сохраняют совместимость; рабочая карта всех проектов: [Ai/REPOSITORIES.md](https://github.com/deportsdopolon/Ai/blob/main/REPOSITORIES.md).
